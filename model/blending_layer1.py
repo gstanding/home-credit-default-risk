@@ -8,7 +8,7 @@ Created on Thu Jun 21 10:56:04 2018
 import numpy as np
 from sklearn.model_selection import ShuffleSplit, KFold
 from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, GradientBoostingClassifier
-import xgboost as xgb
+from xgboost import XGBClassifier
 from sklearn.metrics import roc_auc_score
 class blending_layer1(object):
     
@@ -54,10 +54,10 @@ class blending_layer1(object):
         for n_fold, (trn_idx, val_idx) in enumerate(kf.split(rf_train_x)):
             rf = RandomForestClassifier(**parameters)
             rf.fit(rf_train_x[trn_idx], rf_train_y[trn_idx])
-            rf_val_pred[val_idx] = rf.predict_proba(rf_train_x[val_idx])
-            rf_off_val_pred[val_idx] += rf.predict_proba(self.val_x) / kf.n_splits
-            rf_test_pred += rf.predict_proba(self.test_x) / kf.n_splits
-            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(rf_train_y[trn_idx], rf_val_pred[val_idx])))
+            rf_val_pred[val_idx] = rf.predict_proba(rf_train_x[val_idx])[:, 1]
+            rf_off_val_pred += rf.predict_proba(self.val_x)[:, 1] / kf.n_splits
+            rf_test_pred += rf.predict_proba(self.test_x)[:, 1] / kf.n_splits
+            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(rf_train_y[val_idx], rf_val_pred[val_idx])))
         print('Validate auc score:', roc_auc_score(rf_train_y, rf_val_pred))
         print('Off auc score:', roc_auc_score(self.val_y, rf_off_val_pred))
         return rf_val_pred, rf_off_val_pred, rf_test_pred
@@ -71,10 +71,10 @@ class blending_layer1(object):
         for n_fold, (trn_idx, val_idx) in enumerate(kf.split(et_train_x)):
             et = ExtraTreesClassifier(**parameters)
             et.fit(et_train_x[trn_idx], et_train_y[trn_idx])
-            et_val_pred[val_idx] = et.predict_proba(et_train_x[val_idx])
-            et_off_val_pred[val_idx] += et.predict_proba(self.val_x) / kf.n_splits
-            et_test_pred += et.predict_proba(self.test_x) / kf.n_splits
-            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(et_train_y[trn_idx], et_val_pred[val_idx])))
+            et_val_pred[val_idx] = et.predict_proba(et_train_x[val_idx])[:, 1]
+            et_off_val_pred += et.predict_proba(self.val_x)[:, 1] / kf.n_splits
+            et_test_pred += et.predict_proba(self.test_x)[:, 1] / kf.n_splits
+            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(et_train_y[val_idx], et_val_pred[val_idx])))
         print('Validate auc score:', roc_auc_score(et_train_y, et_val_pred))
         print('Off auc score:', roc_auc_score(self.val_y, et_off_val_pred))
         return et_val_pred, et_off_val_pred, et_test_pred
@@ -88,10 +88,10 @@ class blending_layer1(object):
         for n_fold, (trn_idx, val_idx) in enumerate(kf.split(gbdt_train_x)):
             gbdt = GradientBoostingClassifier(**parameters)
             gbdt.fit(gbdt_train_x[trn_idx], gbdt_train_y[trn_idx])
-            gbdt_val_pred[val_idx] = gbdt.predict_proba(gbdt_train_x[val_idx])
-            gbdt_off_val_pred[val_idx] += gbdt.predict_proba(self.val_x) / kf.n_splits
-            gbdt_test_pred += gbdt.predict_proba(self.test_x) / kf.n_splits
-            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(gbdt_train_y[trn_idx], gbdt_val_pred[val_idx])))
+            gbdt_val_pred[val_idx] = gbdt.predict_proba(gbdt_train_x[val_idx])[:, 1]
+            gbdt_off_val_pred += gbdt.predict_proba(self.val_x)[:, 1] / kf.n_splits
+            gbdt_test_pred += gbdt.predict_proba(self.test_x)[:, 1] / kf.n_splits
+            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(gbdt_train_y[val_idx], gbdt_val_pred[val_idx])))
         print('Validate auc score:', roc_auc_score(gbdt_train_y, gbdt_val_pred))
         print('Off auc score:', roc_auc_score(self.val_y, gbdt_off_val_pred))
         return gbdt_val_pred, gbdt_off_val_pred, gbdt_test_pred
@@ -103,21 +103,21 @@ class blending_layer1(object):
         xgb_off_val_pred = np.zeros((self.val_x.shape[0],))
         xgb_test_pred = np.zeros((self.test_x.shape[0],))
         for n_fold, (trn_idx, val_idx) in enumerate(kf.split(xgb_train_x)):
-            xgb = xgb(**parameters)
+            xgb = XGBClassifier(**parameters)
             xgb.fit(xgb_train_x[trn_idx], xgb_train_y[trn_idx])
-            xgb_val_pred[val_idx] = xgb.predict_proba(xgb_train_x[val_idx])
-            xgb_off_val_pred[val_idx] += xgb.predict_proba(self.val_x) / kf.n_splits
-            xgb_test_pred += xgb.predict_proba(self.test_x) / kf.n_splits
-            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(xgb_train_y[trn_idx], xgb_val_pred[val_idx])))
+            xgb_val_pred[val_idx] = xgb.predict_proba(xgb_train_x[val_idx])[:, 1]
+            xgb_off_val_pred += xgb.predict_proba(self.val_x)[:, 1] / kf.n_splits
+            xgb_test_pred += xgb.predict_proba(self.test_x)[:, 1] / kf.n_splits
+            print('Fold %d auc score: %.6f'%(n_fold+1, roc_auc_score(xgb_train_y[val_idx], xgb_val_pred[val_idx])))
         print('Validate auc score:', roc_auc_score(xgb_train_y, xgb_val_pred))
         print('Off auc score:', roc_auc_score(self.val_y, xgb_off_val_pred))
         return xgb_val_pred, xgb_off_val_pred, xgb_test_pred
     
     def merge_data(self):
-        rf_val_pred, rf_off_val_pred, rf_test_pred = self.rf_model()
-        et_val_pred, et_off_val_pred, et_test_pred = self.et_model()
-        gbdt_val_pred, gbdt_off_val_pred, gbdt_test_pred = self.gbdt_model()
-        xgb_val_pred, xgb_off_val_pred, xgb_test_pred = self.xgb_model()
+        rf_val_pred, rf_off_val_pred, rf_test_pred = self.rf_model(parameters={"n_jobs": -1})
+        et_val_pred, et_off_val_pred, et_test_pred = self.et_model(parameters={"n_jobs": -1})
+        gbdt_val_pred, gbdt_off_val_pred, gbdt_test_pred = self.gbdt_model(parameters={"learning_rate": 0.3})
+        xgb_val_pred, xgb_off_val_pred, xgb_test_pred = self.xgb_model(parameters={"n_jobs": -1})
         val_pred = np.zeros((self.train_x.shape[0],))
         ss = self.shuffle_data()
         for n_fold, (trn_idx, val_idx) in enumerate(ss.split(self.train_x)):
@@ -133,7 +133,10 @@ class blending_layer1(object):
         test_pred = (rf_test_pred + et_test_pred + gbdt_test_pred + xgb_test_pred) / 4
         return val_pred, off_val_pred, test_pred
                 
-            
+"""train_x, train_y, val_x, val_y, test_x = np.random.random((7000,10)), np.random.randint(0,2,size=(7000,)), np.random.random((3000,10)), np.random.randint(0,2,size=(3000,)), np.random.random((3000,10))
+bld_layer = blending_layer1(train_x, train_y, val_x, val_y, test_x)
+val_pred, off_val_pred, test_pred = bld_layer.merge_data()"""
+           
         
         
         
