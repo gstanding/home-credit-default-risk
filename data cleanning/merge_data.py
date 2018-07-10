@@ -15,7 +15,7 @@ import gc
 def merge_data():
     print('merge data ...'.center(50, '*'))
     gc.enable()
-    bur_bal = pd.read_csv('../data/bureau_balance.csv')
+    bur_bal = pd.read_csv('F://kaggle/home-credit-default-risk/data/bureau_balance.csv')
     print('bureau_balance shape:', bur_bal.shape)
     #bur_bal.head()
     bur_bal = pd.concat([bur_bal, pd.get_dummies(bur_bal.STATUS, prefix='bur_bal_status')],
@@ -27,7 +27,7 @@ def merge_data():
     del bur_bal
     gc.collect()
 
-    bur = pd.read_csv('../data/bureau.csv')
+    bur = pd.read_csv('F://kaggle/home-credit-default-risk/data/bureau.csv')
     print('bureau shape:', bur.shape)
     #bur.head()
     bur_credit_active_dum = pd.get_dummies(bur.CREDIT_ACTIVE, prefix='ca')
@@ -45,7 +45,7 @@ def merge_data():
     del bur, bur_full, avg_bur_bal
     gc.collect()
 
-    prev = pd.read_csv('../data/previous_application.csv')
+    prev = pd.read_csv('F://kaggle/home-credit-default-risk/data/previous_application.csv')
     print('previous_application shape:', prev.shape)
     #prev.head()
     prev_cat_features = [f_ for f_ in prev.columns if prev[f_].dtype == 'object']
@@ -62,7 +62,7 @@ def merge_data():
     del prev
     gc.collect()
 
-    pos = pd.read_csv('../data/POS_CASH_balance.csv')
+    pos = pd.read_csv('F://kaggle/home-credit-default-risk/data/POS_CASH_balance.csv')
     print('pos_cash_balance shape:', pos.shape)
     #pos.head()
     pos = pd.concat([pos, pd.get_dummies(pos['NAME_CONTRACT_STATUS'], prefix='ncs')], axis=1)
@@ -73,7 +73,7 @@ def merge_data():
     del pos, nb_prevs
     gc.collect()
 
-    cc_bal = pd.read_csv('../data/credit_card_balance.csv')
+    cc_bal = pd.read_csv('F://kaggle/home-credit-default-risk/data/credit_card_balance.csv')
     print('credit_card_balance shape:', cc_bal.shape)
     cc_bal = pd.concat([cc_bal, pd.get_dummies(cc_bal['NAME_CONTRACT_STATUS'], prefix='ncs')], axis=1)
     nb_prevs = cc_bal[['SK_ID_CURR', 'SK_ID_PREV']].groupby('SK_ID_CURR').count()
@@ -83,7 +83,7 @@ def merge_data():
     del cc_bal, nb_prevs
     gc.collect()
 
-    inst = pd.read_csv('../data/installments_payments.csv')
+    inst = pd.read_csv('F://kaggle/home-credit-default-risk/data/installments_payments.csv')
     print('installment_payment shape:', inst.shape)
     nb_prevs = inst[['SK_ID_CURR', 'SK_ID_PREV']].groupby('SK_ID_CURR').count()
     inst['SK_ID_PREV'] = inst['SK_ID_CURR'].map(nb_prevs['SK_ID_PREV'])
@@ -92,8 +92,8 @@ def merge_data():
     del inst, nb_prevs
     gc.collect()
 
-    train = pd.read_csv('../data/application_train.csv')
-    test = pd.read_csv('../data/application_test.csv')
+    train = pd.read_csv('F://kaggle/home-credit-default-risk/data/application_train.csv')
+    test = pd.read_csv('F://kaggle/home-credit-default-risk/data/application_test.csv')
     print('train shape:', train.shape)
     print('test shape:', test.shape)
     y = train['TARGET']
